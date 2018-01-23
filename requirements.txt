@@ -3,3 +3,4 @@ matplotlib
 numpy
 sklearn
 scikit-image
+lxml
