@@ -1,0 +1,5 @@
+medpy
+matplotlib
+numpy
+sklearn
+scikit-image
