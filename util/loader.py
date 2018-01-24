@@ -11,28 +11,29 @@ SUPPORTED_DATASETS = ["LIDC"]
 class Nodule:
     def __init__(self):
         # width or height of image
-        size = 0
+        self.size = 0
 
         # source image ID, path and slice
-        source_id = ""
-        source_path = ""
-        source_slice = ""
+        self.source_id = ""
+        self.source_path = ""
+        self.source_slice = ""
 
         # coordinates from source image
-        source_x = 0
-        source_y = 0
+        self.source_x = 0
+        self.source_y = 0
 
         # pixels of image
-        pixels = np.array([])
+        self.pixels = np.array([])
 
         # is malignant?
-        malignant = False
+        self.malignant = False
 
 
 def load_nodules(dataset_path, dataset_type, debug=False):
     full_path = os.path.realpath(dataset_path)
 
     nodules = []
+
     if dataset_type == 'LIDC':
         nodules = load_lidc(full_path, debug)
     else:
@@ -53,12 +54,17 @@ def get_all_files(path, ending=""):
     return paths
 
 
+def crop_image(pixels, center_x, center_y, image_size):
+    s = image_size / 2
+    return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
+
+
 class LidcImage:
     def __init__(self):
-        id = ""
-        fullpath = ""
-        slice_location = Decimal(0)
-        pixels = np.array([])
+        self.id = ""
+        self.fullpath = ""
+        self.slice_location = Decimal(0)
+        self.pixels = np.array([])
 
 
 def load_lidc(dataset_path, debug):
@@ -109,9 +115,8 @@ def load_lidc(dataset_path, debug):
             else:
                 nodule = Nodule()
 
-                s = 32
-                nodule.size = s * 2
-                nodule.pixels = img.pixels[ann_y - s: ann_y + s, ann_x - s: ann_x + s]
+                nodule.size = 64
+                nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
                 nodule.source_id = ann_id
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
