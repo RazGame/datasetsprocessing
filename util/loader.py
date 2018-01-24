@@ -44,7 +44,7 @@ def load_nodules(dataset_path, dataset_type, debug=False):
 
     if dataset_type == 'LIDC':
         nodules = load_lidc(full_path, debug)
-    if dataset_type == 'NSCLC':
+    elif dataset_type == 'NSCLC':
         nodules = load_nsclc(full_path, debug)
     else:
         raise Exception('Dataset_type is wrong')
@@ -65,7 +65,7 @@ def get_all_files(path, ending=""):
 
 
 def crop_image(pixels, center_x, center_y, image_size):
-    s = image_size / 2
+    s = int(image_size / 2)
     return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
 
 
