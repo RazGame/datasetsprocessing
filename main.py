@@ -5,8 +5,6 @@
 #import numpy as np
 #from sklearn.metrics.cluster import entropy
 
-from util import parser
-
 import util as util
 
 if __name__ == '__main__':
