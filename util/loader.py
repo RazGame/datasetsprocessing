@@ -69,12 +69,26 @@ def crop_image(pixels, center_x, center_y, image_size):
     return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
 
 
-class LidcImage:
+class DicomImage:
     def __init__(self):
         self.id = ""
         self.fullpath = ""
         self.slice_location = Decimal(0)
         self.pixels = np.array([])
+
+
+def load_dicom_image(path):
+    image = DicomImage()
+
+    pixels, header = medpy.load(path)
+
+    image.pixels = pixels
+    image.id = header.data_element("SOPInstanceUID").value
+    image.fullpath = path
+    image.slice_location = Decimal(header.data_element("SliceLocation").value)
+
+    return image
+
 
 def load_lidc(dataset_path, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
@@ -83,31 +97,19 @@ def load_lidc(dataset_path, debug):
     lids_images = []
 
     for path in img_paths:
-        image = LidcImage()
-
-        pixels, header = medpy.load(path)
-
-        image.pixels = pixels
-        image.id = header.data_element("SOPInstanceUID").value
-        image.fullpath = path
-        image.slice_location = Decimal(header.data_element("SliceLocation").value)
-
-        lids_images.append(image)
+        lids_images.append(load_dicom_image(path))
 
     nodules = []
-
 
     for path in ann_paths:
         tree = lxml.parse(path)
         root_node = tree.getroot()
-
 
         for roi_node in root_node.iter('roi'):
             ann_id = roi_node.find('imageSOP_UID').text
             ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
-            #ann_malignant = roi_node.find('inclusion').text
 
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
@@ -120,7 +122,7 @@ def load_lidc(dataset_path, debug):
 
             if img is None:
                 if debug:
-                    print("Image for nodule " + ann_id + " not found.", ann_slice)
+                    print("Image for nodule " + ann_id + " not found.")
             else:
                 nodule = Nodule()
 
@@ -130,7 +132,6 @@ def load_lidc(dataset_path, debug):
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
                 nodule.source_y = ann_y
-                #nodule.malignant = ann_malignant
                 nodule.source_path = img.fullpath
 
                 nodules.append(nodule)
@@ -138,4 +139,47 @@ def load_lidc(dataset_path, debug):
     return nodules
 
 def load_nsclc(dataset_path, debug):
-    return []
+    img_paths = get_all_files(dataset_path, '.dcm')
+    ann_paths = get_all_files(dataset_path, '.xml')
+
+    lids_images = []
+
+    for path in img_paths:
+        lids_images.append(load_dicom_image(path))
+
+    nodules = []
+
+    for path in ann_paths:
+        tree = lxml.parse(path)
+        root_node = tree.getroot()
+
+        uid_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}sopInstanceUid')
+        x_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}x')
+        y_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}y')
+
+        ann_id = uid_node.attrib['root']
+        ann_x = int(float(x_node.attrib['value']))
+        ann_y = int(float(y_node.attrib['value']))
+
+        img = None
+        for i in lids_images:
+            if i.id == ann_id:
+                img = i
+
+        if img is None:
+            if debug:
+                print("Image for nodule " + ann_id + " not found.")
+        else:
+            nodule = Nodule()
+
+            nodule.size = 64
+            nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
+            nodule.source_id = ann_id
+            nodule.source_slice = img.slice_location
+            nodule.source_x = ann_x
+            nodule.source_y = ann_y
+            nodule.source_path = img.fullpath
+
+            nodules.append(nodule)
+
+    return nodules
