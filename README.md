@@ -15,4 +15,4 @@ Also you can
 ```
 pip install -r requirements.txt
 ```
-URL for downloading data: https://www.dropbox.com/s/shcy2wen4112uup/data.zip?dl=0
+[URL](https://www.dropbox.com/s/shcy2wen4112uup/data.zip?dl=0) for downloading data.
