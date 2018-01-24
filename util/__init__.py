@@ -1,2 +1,2 @@
-from loader import Nodule, load_nodules
+from loader import SUPPORTED_DATASETS, Nodule, load_nodules
 from parser import *
