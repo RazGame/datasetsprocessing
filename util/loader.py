@@ -4,7 +4,6 @@ import medpy.io as medpy
 import lxml.etree as lxml
 from decimal import *
 
-
 SUPPORTED_DATASETS = ["LIDC"]
 
 
@@ -63,7 +62,7 @@ def get_all_files(path, ending=""):
 
 
 def crop_image(pixels, center_x, center_y, image_size):
-    s = image_size / 2
+    s = int(image_size / 2)
     return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
 
 
@@ -95,18 +94,16 @@ def load_lidc(dataset_path, debug):
 
     nodules = []
 
-
     for path in ann_paths:
         tree = lxml.parse(path)
         root_node = tree.getroot()
-
 
         for roi_node in root_node.iter('roi'):
             ann_id = roi_node.find('imageSOP_UID').text
             ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
-            #ann_malignant = roi_node.find('inclusion').text
+            # ann_malignant = roi_node.find('inclusion').text
 
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
@@ -129,7 +126,7 @@ def load_lidc(dataset_path, debug):
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
                 nodule.source_y = ann_y
-                #nodule.malignant = ann_malignant
+                # nodule.malignant = ann_malignant
                 nodule.source_path = img.fullpath
 
                 nodules.append(nodule)
