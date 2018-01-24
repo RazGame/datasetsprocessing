@@ -14,10 +14,6 @@ if __name__ == '__main__':
 
     util.load_nodules("lidc-data/", "LIDC")
 
-    # Two examples; govnofull gives you matrix + image + header, govno just matrix
-    #govnoFull = parser.LidcParser().get_data(file_to_process)
-    #govnoMatrix = parser.LidcParser().parse_file('lidc-data/' + file_to_process)
-
     # i, h = load("000208.dcm")
     # print(i.shape, i.dtype)
     # # plt.imshow(i, cmap = cm.Greys_r)
