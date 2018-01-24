@@ -2,6 +2,7 @@ import os as os
 import numpy as np
 import medpy.io as medpy
 import lxml.etree as lxml
+from decimal import *
 
 
 SUPPORTED_DATASETS = ["LIDC"]
@@ -12,8 +13,9 @@ class Nodule:
         # width or height of image
         size = 0
 
-        # source image ID and slice
+        # source image ID, path and slice
         source_id = ""
+        source_path = ""
         source_slice = ""
 
         # coordinates from source image
@@ -55,7 +57,7 @@ class LidcImage:
     def __init__(self):
         id = ""
         fullpath = ""
-        slice_location = ""
+        slice_location = Decimal(0)
         pixels = np.array([])
 
 
@@ -73,7 +75,7 @@ def load_lidc(dataset_path, debug):
         image.pixels = pixels
         image.id = header.data_element("SOPInstanceUID").value
         image.fullpath = path
-        image.slice_location = header.data_element("SliceLocation").value
+        image.slice_location = Decimal(header.data_element("SliceLocation").value)
 
         lids_images.append(image)
 
@@ -87,26 +89,25 @@ def load_lidc(dataset_path, debug):
 
         for roi_node in root_node.iter('roi'):
             ann_id = roi_node.find('imageSOP_UID').text
-            ann_slice = '0'
+            ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
             ann_malignant = roi_node.find('inclusion').text
 
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
-                ann_slice = slice_node.text
+                ann_slice = Decimal(slice_node.text)
 
             img = None
             for i in lids_images:
-                print(i.id, ann_id)
-                if i.id == ann_id and (ann_slice == '0' or i.slice_location == ann_slice):
+                if i.id == ann_id and (ann_slice is None or i.slice_location == ann_slice):
                     img = i
 
             if img is None:
                 if debug:
-                    print("Image for nodule " + ann_id + " not found.")
+                    print("Image for nodule " + ann_id + " not found.", ann_slice)
             else:
-                nodule = Nodule
+                nodule = Nodule()
 
                 s = 32
                 nodule.size = s * 2
@@ -116,6 +117,7 @@ def load_lidc(dataset_path, debug):
                 nodule.source_x = ann_x
                 nodule.source_y = ann_y
                 nodule.malignant = ann_malignant
+                nodule.source_path = img.fullpath
 
                 nodules.append(nodule)
 
