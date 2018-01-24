@@ -54,6 +54,11 @@ def get_all_files(path, ending=""):
     return paths
 
 
+def crop_image(pixels, center_x, center_y, image_size):
+    s = image_size / 2
+    return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
+
+
 class LidcImage:
     def __init__(self):
         self.id = ""
@@ -110,9 +115,8 @@ def load_lidc(dataset_path, debug):
             else:
                 nodule = Nodule()
 
-                s = 32
-                nodule.size = s * 2
-                nodule.pixels = img.pixels[ann_y - s: ann_y + s, ann_x - s: ann_x + s]
+                nodule.size = 64
+                nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
                 nodule.source_id = ann_id
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
