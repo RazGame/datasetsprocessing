@@ -30,6 +30,14 @@ class Nodule:
 
 
 def load_nodules(dataset_path, dataset_type, debug=False):
+    """ Load dataset (which has type DATASET_TYPE) from DATASET_PATH recursively.
+
+     DATASET_PATH - path to dataset.
+     DATASET_TYPE - type of dataset. Look SUPPORTED_DATASETS for available dataset types.
+     DEBUF - activates debug messages.
+
+     Returns list of Nodules.
+     """
     full_path = os.path.realpath(dataset_path)
 
     nodules = []
@@ -98,7 +106,7 @@ def load_lidc(dataset_path, debug):
             ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
-            ann_malignant = roi_node.find('inclusion').text
+            #ann_malignant = roi_node.find('inclusion').text
 
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
@@ -121,7 +129,7 @@ def load_lidc(dataset_path, debug):
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
                 nodule.source_y = ann_y
-                nodule.malignant = ann_malignant
+                #nodule.malignant = ann_malignant
                 nodule.source_path = img.fullpath
 
                 nodules.append(nodule)
