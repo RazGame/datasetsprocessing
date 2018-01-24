@@ -1,16 +1,17 @@
-#from medpy.io import load
-#import matplotlib.pyplot as plt
-#import matplotlib.cm as cm
-#import skimage.feature as skimg
-#import numpy as np
-#from sklearn.metrics.cluster import entropy
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import skimage.feature as skimg
+import numpy as np
+from sklearn.metrics.cluster import entropy
 
-import util as util
+from util import loader, featureExtractor
 
 if __name__ == '__main__':
-    file_to_process = '208.xml'
+    lidc_data = loader.load_nodules("lidc-data/", "LIDC")
 
-    util.load_nodules("lidc-data/", "LIDC")
+    lidc_features = featureExtractor.get_features(lidc_data)
+
+    print(lidc_features)
 
     # i, h = load("000208.dcm")
     # print(i.shape, i.dtype)

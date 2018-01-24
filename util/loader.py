@@ -98,7 +98,6 @@ def load_lidc(dataset_path, debug):
 
     for path in img_paths:
         lids_images.append(load_dicom_image(path))
-
     nodules = []
 
     for path in ann_paths:
@@ -110,7 +109,6 @@ def load_lidc(dataset_path, debug):
             ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
-
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
                 ann_slice = Decimal(slice_node.text)
@@ -138,8 +136,7 @@ def load_lidc(dataset_path, debug):
 
     return nodules
 
-def load_nsclc(dataset_path, debug):
-    img_paths = get_all_files(dataset_path, '.dcm')
+def load_nsclc(dataset_path, debug):    img_paths = get_all_files(dataset_path, '.dcm')
     ann_paths = get_all_files(dataset_path, '.xml')
 
     lids_images = []
