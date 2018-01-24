@@ -1,17 +1,22 @@
-from medpy.io import load
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import skimage.feature as skimg
-import numpy as np
-from sklearn.metrics.cluster import entropy
+#from medpy.io import load
+#import matplotlib.pyplot as plt
+#import matplotlib.cm as cm
+#import skimage.feature as skimg
+#import numpy as np
+#from sklearn.metrics.cluster import entropy
 
 from util import parser
 
+import util as util
+
 if __name__ == '__main__':
     file_to_process = '208.xml'
+
+    util.load_nodules("lidc-data/", "LIDC")
+
     # Two examples; govnofull gives you matrix + image + header, govno just matrix
-    govnoFull = parser.LidcParser().get_data(file_to_process)
-    govnoMatrix = parser.LidcParser().parse_file('lidc-data/' + file_to_process)
+    #govnoFull = parser.LidcParser().get_data(file_to_process)
+    #govnoMatrix = parser.LidcParser().parse_file('lidc-data/' + file_to_process)
 
     # i, h = load("000208.dcm")
     # print(i.shape, i.dtype)
