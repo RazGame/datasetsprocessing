@@ -5,7 +5,7 @@ import lxml.etree as lxml
 from decimal import *
 
 
-SUPPORTED_DATASETS = ["LIDC"]
+SUPPORTED_DATASETS = ['LIDC', 'NSCLC']
 
 
 class Nodule:
@@ -44,6 +44,8 @@ def load_nodules(dataset_path, dataset_type, debug=False):
 
     if dataset_type == 'LIDC':
         nodules = load_lidc(full_path, debug)
+    if dataset_type == 'NSCLC':
+        nodules = load_nsclc(full_path, debug)
     else:
         raise Exception('Dataset_type is wrong')
 
@@ -73,7 +75,6 @@ class LidcImage:
         self.fullpath = ""
         self.slice_location = Decimal(0)
         self.pixels = np.array([])
-
 
 def load_lidc(dataset_path, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
@@ -135,3 +136,6 @@ def load_lidc(dataset_path, debug):
                 nodules.append(nodule)
 
     return nodules
+
+def load_nsclc(dataset_path, debug):
+    return []
