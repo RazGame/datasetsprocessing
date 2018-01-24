@@ -35,7 +35,7 @@ def get_features(lidc_data):
         grey_comatrix = skimg.greycomatrix(nodule.pixels, [1], [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4],
                                            nodule_feature.max_coord + 1)
 
-        nodule_feature.grey_comatrix = grey_comatrix
+        #nodule_feature.grey_comatrix = grey_comatrix
 
         nodule_feature.contrast = skimg.greycoprops(grey_comatrix, 'contrast')
         nodule_feature.dissimilarity = skimg.greycoprops(grey_comatrix, 'dissimilarity')
@@ -45,7 +45,6 @@ def get_features(lidc_data):
         nodule_feature.ASM = skimg.greycoprops(grey_comatrix, 'ASM')
         nodule_feature.ent = entropy(nodule.pixels)
 
-        # features.append(nodule_feature))
-        # print(nodule_feature)
+        features.append(nodule_feature)
 
     return features
