@@ -32,7 +32,8 @@ def get_features(lidc_data):
 
         nodule_feature.max_coord = np.max(nodule.pixels)
 
-        grey_comatrix = skimg.greycomatrix(nodule.pixels, [1], [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4], nodule_feature.max_coord + 1)
+        grey_comatrix = skimg.greycomatrix(nodule.pixels, [1], [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4],
+                                           nodule_feature.max_coord + 1)
 
         nodule_feature.grey_comatrix = grey_comatrix
 

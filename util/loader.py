@@ -4,7 +4,6 @@ import medpy.io as medpy
 import lxml.etree as lxml
 from decimal import *
 
-
 SUPPORTED_DATASETS = ['LIDC', 'NSCLC']
 
 
@@ -136,7 +135,9 @@ def load_lidc(dataset_path, debug):
 
     return nodules
 
-def load_nsclc(dataset_path, debug):    img_paths = get_all_files(dataset_path, '.dcm')
+
+def load_nsclc(dataset_path, debug):
+    img_paths = get_all_files(dataset_path, '.dcm')
     ann_paths = get_all_files(dataset_path, '.xml')
 
     lids_images = []
