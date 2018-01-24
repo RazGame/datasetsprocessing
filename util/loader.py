@@ -107,7 +107,7 @@ def load_lidc(dataset_path, debug):
             ann_slice = None
             ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
             ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
-            #ann_malignant = roi_node.find('inclusion').text
+            # ann_malignant = roi_node.find('inclusion').text
 
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
@@ -130,7 +130,7 @@ def load_lidc(dataset_path, debug):
                 nodule.source_slice = ann_slice
                 nodule.source_x = ann_x
                 nodule.source_y = ann_y
-                #nodule.malignant = ann_malignant
+                # nodule.malignant = ann_malignant
                 nodule.source_path = img.fullpath
 
                 nodules.append(nodule)
