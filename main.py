@@ -1,17 +1,35 @@
-#import matplotlib.pyplot as plt
-#import matplotlib.cm as cm
-#import skimage.feature as skimg
-#import numpy as np
-#from sklearn.metrics.cluster import entropy
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import numpy as np
+from sklearn.svm import SVC
 
-from util import loader, featureExtractor
+from util import loader, feature_extractor
+
+
+def show_nodule(nodule):
+    plt.imshow(nodule.pixels, cmap=cm.Greys_r)
+    plt.show()
+
 
 if __name__ == '__main__':
-    lidc_data = loader.load_nodules("lidc-data/", "LIDC")
+    lidc_data = loader.load_nodules('lidc-data/', 'LIDC')
+    nsclc_data = loader.load_nodules('nsclc-data/', 'NSCLC')
 
-    lidc_features = featureExtractor.get_features(lidc_data[:5])
+    lidc_features = feature_extractor.get_features(lidc_data[:10])
+    nsclc_features = feature_extractor.get_features(nsclc_data)
 
-    print(lidc_features)
+    print("LIDC:")
+    for f in lidc_features:
+        print (f)
 
-    # plt.imshow(i, cmap = cm.Greys_r)
-    # plt.show()
+    print("NSCLC:")
+    for f in nsclc_features:
+        print (f)
+
+    X = feature_extractor.features_to_matrix(lidc_features)
+    y = np.random.choice(a=[False, True], size=len(lidc_features))  # TODO
+
+    svm = SVC()
+    svm.fit(X, y)
+
+    print('score', svm.score(X, y))
