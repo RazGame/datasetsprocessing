@@ -1,6 +1,8 @@
 import skimage.feature as skimg
 import numpy as np
 from sklearn.metrics.cluster import entropy
+import pickle
+import gzip
 import warnings
 
 
@@ -47,6 +49,8 @@ def get_features(lidc_data):
 
         features.append(nodule_feature)
 
+        print(nodule.source_id)
+
     return features
 
 
@@ -58,3 +62,21 @@ def features_to_matrix(fs):
             features_matrix = np.append(features_matrix, value)
 
     return features_matrix.reshape((len(fs), -1))
+
+
+def dump_features(file_path, features):
+    f = gzip.open(file_path, "wb")
+
+    pickle.dump(features, f)
+
+    f.close()
+
+
+def restore_features(file_path):
+    f = gzip.open(file_path, "rb")
+
+    features = pickle.load(f)
+
+    f.close()
+
+    return features
