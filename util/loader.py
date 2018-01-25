@@ -192,6 +192,7 @@ def load_nsclc(dataset_path, image_size, debug):
             nodule.source_x = ann_x
             nodule.source_y = ann_y
             nodule.source_path = img.fullpath
+            nodule.malignant = True
 
             nodules.append(nodule)
 
