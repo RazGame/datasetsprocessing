@@ -1,10 +1,13 @@
-#import matplotlib.pyplot as plt
-#import matplotlib.cm as cm
-#import skimage.feature as skimg
-#import numpy as np
-#from sklearn.metrics.cluster import entropy
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
 
 from util import loader, featureExtractor
+
+
+def show_nodule(nodule):
+    plt.imshow(nodule.pixels, cmap=cm.Greys_r)
+    plt.show()
+
 
 if __name__ == '__main__':
     lidc_data = loader.load_nodules('lidc-data/', 'LIDC')
@@ -24,5 +27,3 @@ if __name__ == '__main__':
     for f in nsclc_features:
         print (f)
 
-    # plt.imshow(i, cmap = cm.Greys_r)
-    # plt.show()
