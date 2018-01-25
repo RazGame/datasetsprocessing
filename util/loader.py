@@ -28,7 +28,7 @@ class Nodule:
         self.pixels = np.array([])
 
         # is malignant?
-        self.malignant = False
+        self.conclusion = False
 
 
 def load_nodules(dataset_path, dataset_type, image_size = 64, debug=False):
@@ -192,7 +192,7 @@ def load_nsclc(dataset_path, image_size, debug):
             nodule.source_x = ann_x
             nodule.source_y = ann_y
             nodule.source_path = img.fullpath
-            nodule.malignant = True
+            nodule.conclusion = True
 
             nodules.append(nodule)
 

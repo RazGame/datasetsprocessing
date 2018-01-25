@@ -14,7 +14,7 @@ class Features:
     def __init__(self, source_id):
         self.source_id = source_id
         self.max_coord = 0
-        self.malignant = False
+        self.conclusion = False
         self.features = dict()
 
     def __str__(self):
@@ -33,7 +33,7 @@ def get_features(lidc_data):
         nodule_feature = Features(nodule.source_id)
 
         nodule_feature.max_coord = np.max(nodule.pixels)
-        nodule_feature.malignant = nodule.malignant
+        nodule_feature.conclusion = nodule.conclusion
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -70,7 +70,7 @@ def features_to_results(features):
     features_results = []
 
     for feature in features:
-        features_results.append(feature.malignant)
+        features_results.append(feature.conclusion)
 
     return features_results
 
