@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
@@ -12,22 +13,34 @@ def show_nodule(nodule):
 
 
 if __name__ == '__main__':
-    lidc_data = loader.load_nodules('lidc-data/', 'LIDC')
-    nsclc_data = loader.load_nodules('nsclc-data/', 'NSCLC')
+    NODULES_DAMP_PATH = 'nodules.dump'
+    FEATURES_DAMP_PATH = 'features.dump'
+    USE_DAMPED_NODULES = True
+    USE_DAMPED_FEATURES = True
 
-    lidc_features = feature_extractor.get_features(lidc_data[:10])
-    nsclc_features = feature_extractor.get_features(nsclc_data)
+    nodules = None
 
-    print("LIDC:")
-    for f in lidc_features:
-        print (f)
+    if USE_DAMPED_NODULES and os.path.isfile(NODULES_DAMP_PATH):
+        nodules = loader.restore_nodules(NODULES_DAMP_PATH)
+    else:
+        lidc_nodules = loader.load_nodules('lidc-data/', 'LIDC')
+        nsclc_nodules = loader.load_nodules('nsclc-data/', 'NSCLC')
 
-    print("NSCLC:")
-    for f in nsclc_features:
-        print (f)
+        nodules = np.append(lidc_nodules, nsclc_nodules)
 
-    X = feature_extractor.features_to_matrix(lidc_features)
-    y = np.random.choice(a=[False, True], size=len(lidc_features))  # TODO
+        loader.dump_nodules(NODULES_DAMP_PATH, nodules)
+
+    features = None
+
+    if USE_DAMPED_FEATURES and os.path.isfile(FEATURES_DAMP_PATH):
+        features = feature_extractor.restore_features(FEATURES_DAMP_PATH)
+    else:
+        features = feature_extractor.get_features(nodules)
+
+        feature_extractor.dump_features(FEATURES_DAMP_PATH, features)
+
+    X = feature_extractor.features_to_matrix(features)
+    y = np.random.choice(a=[False, True], size=len(features))  # TODO
 
     svm = SVC()
     svm.fit(X, y)

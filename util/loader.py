@@ -2,6 +2,8 @@ import os as os
 import numpy as np
 import medpy.io as medpy
 import lxml.etree as lxml
+import gzip
+import pickle
 from decimal import *
 
 SUPPORTED_DATASETS = ['LIDC', 'NSCLC']
@@ -179,5 +181,23 @@ def load_nsclc(dataset_path, debug):
             nodule.source_path = img.fullpath
 
             nodules.append(nodule)
+
+    return nodules
+
+
+def dump_nodules(file_path, features):
+    f = gzip.open(file_path, "wb")
+
+    pickle.dump(features, f)
+
+    f.close()
+
+
+def restore_nodules(file_path):
+    f = gzip.open(file_path, "rb")
+
+    nodules = pickle.load(f)
+
+    f.close()
 
     return nodules
