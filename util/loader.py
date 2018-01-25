@@ -6,6 +6,7 @@ import gzip
 import pickle
 from decimal import *
 
+
 SUPPORTED_DATASETS = ['LIDC', 'NSCLC']
 
 
@@ -27,26 +28,27 @@ class Nodule:
         self.pixels = np.array([])
 
         # is malignant?
-        self.malignant = False
+        self.conclusion = False
 
 
-def load_nodules(dataset_path, dataset_type, debug=False):
+def load_nodules(dataset_path, dataset_type, image_size = 64, debug=False):
     """ Load dataset (which has type DATASET_TYPE) from DATASET_PATH recursively.
 
      DATASET_PATH - path to dataset.
      DATASET_TYPE - type of dataset. Look SUPPORTED_DATASETS for available dataset types.
+     IMAGE_SIZE - image size of nodule.
      DEBUF - activates debug messages.
 
      Returns list of Nodules.
      """
     full_path = os.path.realpath(dataset_path)
 
-    nodules = []
+    nodules = None
 
     if dataset_type == 'LIDC':
-        nodules = load_lidc(full_path, debug)
+        nodules = load_lidc(full_path, image_size, debug)
     elif dataset_type == 'NSCLC':
-        nodules = load_nsclc(full_path, debug)
+        nodules = load_nsclc(full_path, image_size, debug)
     else:
         raise Exception('Dataset_type is wrong')
 
@@ -91,7 +93,7 @@ def load_dicom_image(path):
     return image
 
 
-def load_lidc(dataset_path, debug):
+def load_lidc(dataset_path, image_size, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
     ann_paths = get_all_files(dataset_path, '.xml')
 
@@ -108,8 +110,19 @@ def load_lidc(dataset_path, debug):
         for roi_node in root_node.iter('roi'):
             ann_id = roi_node.find('imageSOP_UID').text
             ann_slice = None
-            ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
-            ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
+
+            n = 0
+            x = 0.0
+            y = 0.0
+
+            for coord_node in roi_node.iter('edgeMap'):
+                n += 1
+                x += float(coord_node.find('xCoord').text)
+                y += float(coord_node.find('yCoord').text)
+
+            ann_x = int(x / n)
+            ann_y = int(y / n)
+
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
                 ann_slice = Decimal(slice_node.text)
@@ -125,7 +138,7 @@ def load_lidc(dataset_path, debug):
             else:
                 nodule = Nodule()
 
-                nodule.size = 64
+                nodule.size = image_size
                 nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
                 nodule.source_id = ann_id
                 nodule.source_slice = ann_slice
@@ -138,7 +151,7 @@ def load_lidc(dataset_path, debug):
     return nodules
 
 
-def load_nsclc(dataset_path, debug):
+def load_nsclc(dataset_path, image_size, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
     ann_paths = get_all_files(dataset_path, '.xml')
 
@@ -172,13 +185,14 @@ def load_nsclc(dataset_path, debug):
         else:
             nodule = Nodule()
 
-            nodule.size = 64
+            nodule.size = image_size
             nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
             nodule.source_id = ann_id
             nodule.source_slice = img.slice_location
             nodule.source_x = ann_x
             nodule.source_y = ann_y
             nodule.source_path = img.fullpath
+            nodule.conclusion = True
 
             nodules.append(nodule)
 
