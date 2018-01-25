@@ -110,8 +110,19 @@ def load_lidc(dataset_path, image_size, debug):
         for roi_node in root_node.iter('roi'):
             ann_id = roi_node.find('imageSOP_UID').text
             ann_slice = None
-            ann_x = int(roi_node.find('edgeMap').find('xCoord').text)
-            ann_y = int(roi_node.find('edgeMap').find('yCoord').text)
+
+            n = 0
+            x = 0.0
+            y = 0.0
+
+            for coord_node in roi_node.iter('edgeMap'):
+                n += 1
+                x += float(coord_node.find('xCoord').text)
+                y += float(coord_node.find('yCoord').text)
+
+            ann_x = int(x / n)
+            ann_y = int(y / n)
+
             slice_node = roi_node.find('imageZposition')
             if slice_node is not None:
                 ann_slice = Decimal(slice_node.text)
