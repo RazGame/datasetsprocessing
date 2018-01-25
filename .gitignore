@@ -8,6 +8,8 @@ Desktop.ini
 lidc-data
 luna-data
 nsclc-data
+*.dump
+*.pyc
 
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
