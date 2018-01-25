@@ -71,7 +71,7 @@ def features_to_results(features):
 
     for feature in features:
         features_results.append(feature.malignant)
-            
+
     return features_results
 
 
