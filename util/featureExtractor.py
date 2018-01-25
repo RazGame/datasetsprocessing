@@ -1,6 +1,7 @@
 import skimage.feature as skimg
 import numpy as np
 from sklearn.metrics.cluster import entropy
+import warnings
 
 
 def get_feature(comatrix, mode):
@@ -30,8 +31,10 @@ def get_features(lidc_data):
 
         nodule_feature.max_coord = np.max(nodule.pixels)
 
-        grey_comatrix = skimg.greycomatrix(nodule.pixels, [1], [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4],
-                                           nodule_feature.max_coord + 1)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            grey_comatrix = skimg.greycomatrix(nodule.pixels, [1], [0, np.pi / 4, np.pi / 2, 3 * np.pi / 4],
+                                               nodule_feature.max_coord + 1)
 
         nodule_feature.features['contrast'] = skimg.greycoprops(grey_comatrix, 'contrast')
         nodule_feature.features['dissimilarity'] = skimg.greycoprops(grey_comatrix, 'dissimilarity')
