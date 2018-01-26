@@ -31,7 +31,7 @@ class Nodule:
         self.conclusion = False
 
 
-def load_nodules(dataset_path, dataset_type, image_size = 64, debug=False):
+def load_nodules(dataset_path, dataset_type, image_size=16, debug=False):
     """ Load dataset (which has type DATASET_TYPE) from DATASET_PATH recursively.
 
      DATASET_PATH - path to dataset.
@@ -107,23 +107,23 @@ def load_lidc(dataset_path, image_size, debug):
         tree = lxml.parse(path)
         root_node = tree.getroot()
 
-        for roi_node in root_node.iter('roi'):
-            ann_id = roi_node.find('imageSOP_UID').text
+        for roi_node in root_node.iter('{http://www.nih.gov}roi'):
+            ann_id = roi_node.find('{http://www.nih.gov}imageSOP_UID').text
             ann_slice = None
 
             n = 0
             x = 0.0
             y = 0.0
 
-            for coord_node in roi_node.iter('edgeMap'):
+            for coord_node in roi_node.iter('{http://www.nih.gov}edgeMap'):
                 n += 1
-                x += float(coord_node.find('xCoord').text)
-                y += float(coord_node.find('yCoord').text)
+                x += float(coord_node.find('{http://www.nih.gov}xCoord').text)
+                y += float(coord_node.find('{http://www.nih.gov}yCoord').text)
 
             ann_x = int(x / n)
             ann_y = int(y / n)
 
-            slice_node = roi_node.find('imageZposition')
+            slice_node = roi_node.find('{http://www.nih.gov}imageZposition')
             if slice_node is not None:
                 ann_slice = Decimal(slice_node.text)
 
