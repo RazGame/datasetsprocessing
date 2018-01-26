@@ -26,10 +26,12 @@ class Features:
         return string
 
 
-def get_features(lidc_data):
+def get_features(nodules):
     features = []
 
-    for nodule in lidc_data:
+    i = 0
+
+    for nodule in nodules:
         nodule_feature = Features(nodule.source_id)
 
         nodule_feature.max_coord = np.max(nodule.pixels)
@@ -51,7 +53,8 @@ def get_features(lidc_data):
 
         features.append(nodule_feature)
 
-        print(nodule.source_id)
+        i += 1
+        print 'progress =', i, '/', len(nodules), nodule.source_id
 
     return features
 
