@@ -27,8 +27,11 @@ if __name__ == '__main__':
         nsclc_nodules = loader.load_nodules('nsclc-data/', 'NSCLC')
 
         nodules = np.append(lidc_nodules, nsclc_nodules)
+        print 'lens:', len(lidc_nodules), len(nsclc_nodules), len(nodules)
 
         loader.dump_nodules(NODULES_DAMP_PATH, nodules)
+
+    print len(nodules)
 
     features = None
 
@@ -38,6 +41,11 @@ if __name__ == '__main__':
         features = feature_extractor.get_features(nodules)
 
         feature_extractor.dump_features(FEATURES_DAMP_PATH, features)
+
+    print(len(features))
+
+    for f in features:
+        print(f.conclusion)
 
     X = feature_extractor.features_to_matrix(features)
     y = np.random.choice(a=[False, True], size=len(features))  # TODO
