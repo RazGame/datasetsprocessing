@@ -4,3 +4,5 @@ numpy
 sklearn
 scikit-image
 lxml
+pandas
+xlrd
