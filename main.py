@@ -18,6 +18,9 @@ if __name__ == '__main__':
     USE_DAMPED_NODULES = True
     USE_DAMPED_FEATURES = True
 
+    # Test loading
+    print loader.load_lidc_conclusions('lidc-data/annotation.xls')
+
     nodules = None
 
     if USE_DAMPED_NODULES and os.path.isfile(NODULES_DAMP_PATH):

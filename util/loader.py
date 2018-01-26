@@ -2,6 +2,7 @@ import os as os
 import numpy as np
 import medpy.io as medpy
 import lxml.etree as lxml
+import pandas as pd
 import gzip
 import pickle
 from decimal import *
@@ -107,23 +108,23 @@ def load_lidc(dataset_path, image_size, debug):
         tree = lxml.parse(path)
         root_node = tree.getroot()
 
-        for roi_node in root_node.iter('{http://www.nih.gov}roi'):
-            ann_id = roi_node.find('{http://www.nih.gov}imageSOP_UID').text
+        for roi_node in root_node.iter('{*}roi'):
+            ann_id = roi_node.find('{*}imageSOP_UID').text
             ann_slice = None
 
             n = 0
             x = 0.0
             y = 0.0
 
-            for coord_node in roi_node.iter('{http://www.nih.gov}edgeMap'):
+            for coord_node in roi_node.iter('{*}edgeMap'):
                 n += 1
-                x += float(coord_node.find('{http://www.nih.gov}xCoord').text)
-                y += float(coord_node.find('{http://www.nih.gov}yCoord').text)
+                x += float(coord_node.find('{*}xCoord').text)
+                y += float(coord_node.find('{*}yCoord').text)
 
             ann_x = int(x / n)
             ann_y = int(y / n)
 
-            slice_node = roi_node.find('{http://www.nih.gov}imageZposition')
+            slice_node = roi_node.find('{*}imageZposition')
             if slice_node is not None:
                 ann_slice = Decimal(slice_node.text)
 
@@ -215,3 +216,15 @@ def restore_nodules(file_path):
     f.close()
 
     return nodules
+
+
+def load_lidc_conclusions(path):
+    file = open(path, "rb")
+    df = pd.read_excel(file)
+
+    file.close()
+
+    patient_ids = np.array(df['TCIA Patient ID'], dtype=str)
+    conclusions = np.array(df['Conclusion'])
+
+    return dict(zip(patient_ids, conclusions))
