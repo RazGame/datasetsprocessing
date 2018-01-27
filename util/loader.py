@@ -83,7 +83,9 @@ def load_dicom_image(path):
 
     pixels, header = medpy.load(path)
 
-    image.pixels = pixels
+    fix_pixels = np.vectorize(lambda p: max(p, 0.0))
+
+    image.pixels = fix_pixels(pixels)
     image.id = header.data_element("SOPInstanceUID").value
     image.fullpath = path
     image.slice_location = Decimal(header.data_element("SliceLocation").value)
