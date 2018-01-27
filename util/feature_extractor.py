@@ -56,7 +56,7 @@ def get_features(nodules):
         i += 1
         print 'progress =', i, '/', len(nodules), nodule.source_id
 
-    return features
+    return np.array(features)
 
 
 def features_to_matrix(fs):
