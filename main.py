@@ -40,7 +40,7 @@ def get_features(nodules, use_dump=False, dump_name='default'):
         features = feature_extractor.restore_features(dump_path)
     else:
         print 'Load features from nodules'
-        features = feature_extractor.get_features(lidc_nodules)
+        features = feature_extractor.get_features(nodules)
 
         feature_extractor.dump_features(dump_path, features)
 

@@ -67,7 +67,8 @@ def get_all_files(path, ending=""):
 
 def crop_image(pixels, center_x, center_y, image_size):
     s = int(image_size / 2)
-    return pixels[center_x - s: center_x + s, center_y - s: center_y + s]
+    fix_pixels = np.vectorize(lambda p: max(p, 0.0))
+    return fix_pixels(pixels[center_x - s: center_x + s, center_y - s: center_y + s])
 
 
 class DicomImage:
@@ -83,9 +84,7 @@ def load_dicom_image(path):
 
     pixels, header = medpy.load(path)
 
-    fix_pixels = np.vectorize(lambda p: max(p, 0.0))
-
-    image.pixels = fix_pixels(pixels)
+    image.pixels = pixels
     image.id = header.data_element("SOPInstanceUID").value
     image.fullpath = path
     image.slice_location = Decimal(header.data_element("SliceLocation").value)
