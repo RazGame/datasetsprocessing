@@ -87,7 +87,7 @@ def load_dicom_image(path):
     image.pixels = pixels
     image.id = header.data_element("SOPInstanceUID").value
     image.fullpath = path
-    image.slice_location = Decimal(header.data_element("SliceLocation").value)
+    image.slice_location = Decimal(header.get("SliceLocation", 0))
 
     return image
 
