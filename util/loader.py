@@ -177,9 +177,9 @@ def load_nsclc(dataset_path, image_size, debug):
         tree = lxml.parse(path)
         root_node = tree.getroot()
 
-        uid_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}sopInstanceUid')
-        x_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}x')
-        y_node = root_node.find('.//{gme://caCORE.caCORE/4.4/edu.northwestern.radiology.AIM}y')
+        uid_node = root_node.find('.//{*}sopInstanceUid')
+        x_node = root_node.find('.//{*}x')
+        y_node = root_node.find('.//{*}y')
 
         ann_id = uid_node.attrib['root']
         ann_x = int(float(x_node.attrib['value']))
