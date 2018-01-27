@@ -15,40 +15,50 @@ def show_nodule(nodule):
     plt.show()
 
 
+def load_dataset(dataset_path, dataset_type, use_dump=False):
+    basename = os.path.basename(os.path.normpath(dataset_path))
+    dump_path = 'nodules-' + basename + '.dump'
+
+    if use_dump and os.path.isfile(dump_path):
+        print 'Load nodules from file ' + dump_path
+        nodules = loader.restore_nodules(dump_path)
+    else:
+        print 'Load nodules from dataset ' + dataset_path
+        nodules = loader.load_nodules(dataset_path, dataset_type)
+        loader.dump_nodules(dump_path, nodules)
+
+    print 'Nodules loaded: ' + str(len(nodules))
+
+    return nodules
+
+
+def get_features(nodules, use_dump=False, dump_name='default'):
+    dump_path = 'features-' + dump_name + '.dump'
+
+    if use_dump and os.path.isfile(dump_path):
+        print 'Load features from file ' + dump_path
+        features = feature_extractor.restore_features(dump_path)
+    else:
+        print 'Load features from nodules'
+        features = feature_extractor.get_features(lidc_nodules)
+
+        feature_extractor.dump_features(dump_path, features)
+
+    print 'Features loaded: ' + str(len(features))
+
+    return features
+
+
 if __name__ == '__main__':
-    NODULES_DAMP_PATH = 'nodules.dump'
-    FEATURES_DAMP_PATH = 'features.dump'
-    USE_DAMPED_NODULES = True
-    USE_DAMPED_FEATURES = True
+    lidc_nodules = load_dataset('lidc-data', 'LIDC', use_dump=True)
+    nsclc_nodules = load_dataset('nsclc-data', 'NSCLC', use_dump=True)
 
-    nodules = None
+    all_nodules = lidc_nodules + nsclc_nodules
 
-    if USE_DAMPED_NODULES and os.path.isfile(NODULES_DAMP_PATH):
-        nodules = loader.restore_nodules(NODULES_DAMP_PATH)
-    else:
-        lidc_nodules = loader.load_nodules('lidc-data/', 'LIDC')
-        nsclc_nodules = loader.load_nodules('nsclc-data/', 'NSCLC')
+    all_features = get_features(all_nodules, use_dump=True, dump_name='all')
 
-        nodules = np.append(lidc_nodules, nsclc_nodules)
-        print 'lens:', len(lidc_nodules), len(nsclc_nodules), len(nodules)
-
-        loader.dump_nodules(NODULES_DAMP_PATH, nodules)
-
-    print len(nodules)
-
-    features = None
-
-    if USE_DAMPED_FEATURES and os.path.isfile(FEATURES_DAMP_PATH):
-        features = feature_extractor.restore_features(FEATURES_DAMP_PATH)
-    else:
-        features = feature_extractor.get_features(nodules)
-
-        feature_extractor.dump_features(FEATURES_DAMP_PATH, features)
-
-    print(len(features))
-
-    X = feature_extractor.features_to_matrix(features)
-    y = feature_extractor.features_to_results(features)
+    X = feature_extractor.features_to_matrix(all_features)
+    y = feature_extractor.features_to_results(all_features)
 
     scaler = MinMaxScaler()
     X = scaler.fit_transform(X)
