@@ -18,9 +18,6 @@ if __name__ == '__main__':
     USE_DAMPED_NODULES = True
     USE_DAMPED_FEATURES = True
 
-    # Test loading
-    print loader.load_lidc_conclusions('lidc-data/annotation.xls')
-
     nodules = None
 
     if USE_DAMPED_NODULES and os.path.isfile(NODULES_DAMP_PATH):
@@ -51,7 +48,7 @@ if __name__ == '__main__':
         print(f.conclusion)
 
     X = feature_extractor.features_to_matrix(features)
-    y = np.random.choice(a=[False, True], size=len(features))  # TODO
+    y = feature_extractor.features_to_results(features)
 
     svm = SVC()
     svm.fit(X, y)

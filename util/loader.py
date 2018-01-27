@@ -95,59 +95,69 @@ def load_dicom_image(path):
 
 
 def load_lidc(dataset_path, image_size, debug):
-    img_paths = get_all_files(dataset_path, '.dcm')
-    ann_paths = get_all_files(dataset_path, '.xml')
+    patient_results = load_lidc_conclusions(os.path.join(dataset_path, 'annotation.xls'))
 
-    lids_images = []
+    subpaths = [os.path.join(dataset_path, p) for p in os.listdir(dataset_path)]
+    subdirs = [p for p in subpaths if os.path.isdir(p)]
 
-    for path in img_paths:
-        lids_images.append(load_dicom_image(path))
     nodules = []
 
-    for path in ann_paths:
-        tree = lxml.parse(path)
-        root_node = tree.getroot()
+    for subdir in subdirs:
+        conclusion = patient_results[os.path.basename(subdir)]
 
-        for roi_node in root_node.iter('{*}roi'):
-            ann_id = roi_node.find('{*}imageSOP_UID').text
-            ann_slice = None
+        img_paths = get_all_files(subdir, '.dcm')
+        ann_paths = get_all_files(subdir, '.xml')
 
-            n = 0
-            x = 0.0
-            y = 0.0
+        lids_images = []
 
-            for coord_node in roi_node.iter('{*}edgeMap'):
-                n += 1
-                x += float(coord_node.find('{*}xCoord').text)
-                y += float(coord_node.find('{*}yCoord').text)
+        for path in img_paths:
+            lids_images.append(load_dicom_image(path))
 
-            ann_x = int(x / n)
-            ann_y = int(y / n)
+        for path in ann_paths:
+            tree = lxml.parse(path)
+            root_node = tree.getroot()
 
-            slice_node = roi_node.find('{*}imageZposition')
-            if slice_node is not None:
-                ann_slice = Decimal(slice_node.text)
+            for roi_node in root_node.iter('{*}roi'):
+                ann_id = roi_node.find('{*}imageSOP_UID').text
+                ann_slice = None
 
-            img = None
-            for i in lids_images:
-                if i.id == ann_id and (ann_slice is None or i.slice_location == ann_slice):
-                    img = i
+                n = 0
+                x = 0.0
+                y = 0.0
 
-            if img is None:
-                if debug:
-                    print("Image for nodule " + ann_id + " not found.")
-            else:
-                nodule = Nodule()
+                for coord_node in roi_node.iter('{*}edgeMap'):
+                    n += 1
+                    x += float(coord_node.find('{*}xCoord').text)
+                    y += float(coord_node.find('{*}yCoord').text)
 
-                nodule.size = image_size
-                nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
-                nodule.source_id = ann_id
-                nodule.source_slice = ann_slice
-                nodule.source_x = ann_x
-                nodule.source_y = ann_y
-                nodule.source_path = img.fullpath
+                ann_x = int(x / n)
+                ann_y = int(y / n)
 
-                nodules.append(nodule)
+                slice_node = roi_node.find('{*}imageZposition')
+                if slice_node is not None:
+                    ann_slice = Decimal(slice_node.text)
+
+                img = None
+                for i in lids_images:
+                    if i.id == ann_id and (ann_slice is None or i.slice_location == ann_slice):
+                        img = i
+
+                if img is None:
+                    if debug:
+                        print("Image for nodule " + ann_id + " not found.")
+                else:
+                    nodule = Nodule()
+
+                    nodule.size = image_size
+                    nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
+                    nodule.source_id = ann_id
+                    nodule.source_slice = ann_slice
+                    nodule.source_x = ann_x
+                    nodule.source_y = ann_y
+                    nodule.source_path = img.fullpath
+                    nodule.conclusion = conclusion
+
+                    nodules.append(nodule)
 
     return nodules
 
