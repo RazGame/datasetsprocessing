@@ -38,22 +38,19 @@ def load_nodules(dataset_path, dataset_type, image_size=16, debug=False):
      DATASET_PATH - path to dataset.
      DATASET_TYPE - type of dataset. Look SUPPORTED_DATASETS for available dataset types.
      IMAGE_SIZE - image size of nodule.
-     DEBUF - activates debug messages.
+     DEBUG - activates debug messages.
 
      Returns list of Nodules.
-     """
+    """
+
     full_path = os.path.realpath(dataset_path)
 
-    nodules = None
-
     if dataset_type == 'LIDC':
-        nodules = load_lidc(full_path, image_size, debug)
+        return load_lidc(full_path, image_size, debug)
     elif dataset_type == 'NSCLC':
-        nodules = load_nsclc(full_path, image_size, debug)
+        return load_nsclc(full_path, image_size, debug)
     else:
         raise Exception('Dataset_type is wrong')
-
-    return nodules
 
 
 def get_all_files(path, ending=""):
