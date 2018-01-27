@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import numpy as np
 from sklearn.svm import SVC
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_curve, auc
+from sklearn.preprocessing import MinMaxScaler
 
 from util import loader, feature_extractor
 
@@ -44,13 +47,28 @@ if __name__ == '__main__':
 
     print(len(features))
 
-    for f in features:
-        print(f.conclusion)
-
     X = feature_extractor.features_to_matrix(features)
     y = feature_extractor.features_to_results(features)
 
-    svm = SVC()
-    svm.fit(X, y)
+    scaler = MinMaxScaler()
+    X = scaler.fit_transform(X)
 
-    print('score', svm.score(X, y))
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.5, random_state=0, shuffle=True)
+
+    svm = SVC(kernel='poly', max_iter=40000, probability=True)
+    svm.fit(X_train, y_train)
+
+    y_score = svm.decision_function(X_test)
+
+    fp, tp, _ = roc_curve(y_test.ravel(), y_score.ravel())
+    auc = auc(fp, tp)
+
+    plt.figure()
+    plt.plot(fp, tp, color='darkorange',
+             lw=2, label='ROC curve (area = %0.2f)' % auc)
+    plt.xlim([-0.01, 1.0])
+    plt.ylim([0.0, 1.01])
+    plt.legend(loc="lower right")
+    plt.show()
+
+    print('score', svm.score(X_test, y_test))
