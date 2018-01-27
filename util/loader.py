@@ -219,10 +219,10 @@ def restore_nodules(file_path):
 
 
 def load_lidc_conclusions(path):
-    file = open(path, "rb")
-    df = pd.read_excel(file)
+    f = open(path, "rb")
+    df = pd.read_excel(f)
 
-    file.close()
+    f.close()
 
     patient_ids = np.array(df['TCIA Patient ID'], dtype=str)
     conclusions = np.array(df['Conclusion'])
