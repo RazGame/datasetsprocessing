@@ -115,6 +115,9 @@ def load_lidc(dataset_path, image_size, debug):
             root_node = tree.getroot()
 
             for roi_node in root_node.iter('{*}roi'):
+                if roi_node.find('{*}imageSOP_UID') is None:
+                    print(path)
+
                 ann_id = roi_node.find('{*}imageSOP_UID').text
                 ann_slice = None
 
