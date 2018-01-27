@@ -75,7 +75,7 @@ def features_to_results(features):
     for feature in features:
         features_results.append(feature.conclusion)
 
-    return features_results
+    return np.array(features_results)
 
 
 def dump_features(file_path, features):
