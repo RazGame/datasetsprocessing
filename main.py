@@ -62,13 +62,31 @@ def plot_roc_curves(vals):
     plt.xlim([-0.01, 1.0])
     plt.ylim([0.0, 1.01])
 
+    plt.xlabel('FP rate')
+    plt.ylabel('TP rate')
+
     plt.legend(loc="lower right")
     plt.show()
 
 
 def add_noise(features, step):
     for i in range(0, len(features), step):
+        print i
         features[i].conclusion = not features[i].conclusion
+
+
+def calculate_impact(a_train, a_ext, f_train, f_ext, f_test, ind):
+    print ind
+    f_train_t = np.append(f_train, f_ext[ind])
+    f_ext_t = np.delete(f_ext, ind)
+
+    _, _, a1 = run_svm(f_train_t, f_test)
+    _, _, a2 = run_svm(f_ext_t, f_test)
+
+    d0 = a_train - a_ext
+    dt = a1 - a2
+
+    return abs(d0 - dt)
 
 
 def run_svm(features_train, features_test):
@@ -90,37 +108,53 @@ def run_svm(features_train, features_test):
     return fpv, tpv, av
 
 
-if __name__ == '__main__':
+def main():
     lidc_nodules = load_dataset('lidc-data', 'LIDC', use_dump=True)
     # nsclc_nodules = load_dataset('nsclc-data', 'NSCLC', use_dump=True)
 
     lidc_features = get_features(lidc_nodules, use_dump=True, dump_name='lidc')
 
-    lidc_features = shuffle(lidc_features[:600], random_state=1)  #
+    lidc_features = shuffle(lidc_features[:1200], random_state=1)
 
     part_size = len(lidc_features) // 3
 
-    known_features = lidc_features[:part_size]
-    extra_features = lidc_features[part_size:part_size * 2]
-    test_features = lidc_features[part_size * 2:]
+    f_train = lidc_features[:part_size]
+    f_extra = lidc_features[part_size:part_size * 2]
+    f_test = lidc_features[part_size * 2:]
 
-    add_noise(extra_features, 2)
+    add_noise(f_extra, 10)
 
-    fpo, tpo, ao = run_svm(known_features, test_features)
+    fpo, tpo, ao = run_svm(f_train, f_test)
+    vals = [(fpo, tpo, ao, 'ROC train')]
 
-    vals = [(fpo, tpo, ao, 'ROC orig')]
+    fpe, tpe, ae = run_svm(f_extra, f_test)
+    vals.append((fpe, tpe, ae, 'ROC extra'))
 
-    mask = np.array(range(len(extra_features)))
+    impacts = []
 
-    for i in range(5):
-        new_mask = np.random.choice(mask, len(mask) - 3, replace=False)
+    for i in range(len(f_extra)):
+        imp = calculate_impact(ao, ae, f_train, f_extra, f_test, i)
+        impacts.append(imp)
 
-        chosen_extra_features = extra_features[new_mask]
-        all_features = np.append(known_features, chosen_extra_features)
+    impacts = impacts/np.linalg.norm(impacts)
 
-        fp, tp, a = run_svm(all_features, test_features)
+    bad_inds = []
 
-        vals.append((fp, tp, a, 'ROC #' + str(i)))
-        print 'step'
+    for i, imp in enumerate(impacts):
+        if imp > 0.1:
+            bad_inds.append(i)
+
+    print bad_inds
+
+    f_filtered = np.delete(f_extra, bad_inds)
+
+    f_train_and_filtered = np.append(f_train, f_filtered)
+
+    fpf, tpf, af = run_svm(f_train_and_filtered, f_test)
+    vals.append((fpf, tpf, af, 'ROC train + filtered extra'))
 
     plot_roc_curves(vals)
+
+
+if __name__ == '__main__':
+    main()
