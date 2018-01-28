@@ -66,6 +66,11 @@ def plot_roc_curves(vals):
     plt.show()
 
 
+def add_noise(features, step):
+    for i in range(0, len(features), step):
+        features[i].conclusion = not features[i].conclusion
+
+
 def run_svm(features_train, features_test):
     x_train, y_train = feature_extractor.transform_features(features_train)
     x_test, y_test = feature_extractor.transform_features(features_test)
@@ -79,7 +84,7 @@ def run_svm(features_train, features_test):
 
     y_score = svm.decision_function(x_test)
 
-    fpv, tpv, _ = roc_curve(y_test, y_score)  # TODO: remove ravel
+    fpv, tpv, _ = roc_curve(y_test, y_score)
     av = auc(fpv, tpv)
 
     return fpv, tpv, av
@@ -99,8 +104,7 @@ if __name__ == '__main__':
     extra_features = lidc_features[part_size:part_size * 2]
     test_features = lidc_features[part_size * 2:]
 
-    for i in range(len(extra_features)):  # TODO
-        extra_features[i].conclusion = not extra_features[i].conclusion
+    add_noise(extra_features, 2)
 
     fpo, tpo, ao = run_svm(known_features, test_features)
 
