@@ -6,10 +6,6 @@ import gzip
 import warnings
 
 
-def get_feature(comatrix, mode):
-    return skimg.greycoprops(comatrix, mode)
-
-
 class Features:
     def __init__(self, source_id):
         self.source_id = source_id
@@ -59,23 +55,19 @@ def get_features(nodules):
     return np.array(features)
 
 
-def features_to_matrix(fs):
-    features_matrix = []
+def transform_features(features):
+    features_matrix = np.array([])
+    conclusions_vector = np.array([])
 
-    for feature in fs:
+    for feature in features:
         for value in feature.features.values():
             features_matrix = np.append(features_matrix, value)
 
-    return features_matrix.reshape((len(fs), -1))
+        conclusions_vector = np.append(conclusions_vector, feature.conclusion)
 
+    features_matrix = features_matrix.reshape((len(features), -1))
 
-def features_to_results(features):
-    features_results = []
-
-    for feature in features:
-        features_results.append(feature.conclusion)
-
-    return np.array(features_results)
+    return features_matrix, conclusions_vector
 
 
 def dump_features(file_path, features):
