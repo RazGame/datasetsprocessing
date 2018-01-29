@@ -7,8 +7,7 @@ import gzip
 import pickle
 from decimal import *
 
-
-SUPPORTED_DATASETS = ['LIDC', 'NSCLC']
+SUPPORTED_DATASETS = ['LIDC', 'NSCLC', 'SPIE']
 
 
 class Nodule:
@@ -165,7 +164,7 @@ def load_lidc(dataset_path, image_size, debug):
 
 def load_nsclc(dataset_path, image_size, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
-    ann_paths = get_all_files(dataset_path, '.xml')
+    ann_path = get_all_files(dataset_path, '.xlsx')
 
     lids_images = []
 
@@ -207,6 +206,45 @@ def load_nsclc(dataset_path, image_size, debug):
             nodule.conclusion = True
 
             nodules.append(nodule)
+
+    return nodules
+
+
+def load_spie(dataset_path, image_size, debug):
+    img_paths = get_all_files(dataset_path, '.dcm')
+    ann_path = get_all_files(dataset_path, '.xlsx')
+
+    f = open(ann_path, "rb")
+    spie_annotation = pd.read_excel(f)
+
+    f.close()
+
+    lids_images = []
+
+    for path in img_paths:
+        lids_images.append(load_dicom_image(path))
+
+    nodules = []
+
+    for row in spie_annotation.iterrows():
+        nodule = Nodule()
+
+        nodule.size = image_size
+        # nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
+        nodule.source_id = row['Nodule Center Image'] # SLICE LOCATION?
+        # nodule.source_slice = img.slice_location
+
+        coords = [x.strip() for x in row['Nodule Center x,y Position*'].split(',')]
+        nodule.source_x = coords[0]
+        nodule.source_y = coords[1]
+        # nodule.source_path = img.fullpath
+        conclusion = row['Final Diagnosis']
+        if conclusion == 'Benign nodule':
+            nodule.conclusion = True
+        else:
+            nodule.conclusion = False
+
+        nodules.append(nodule)
 
     return nodules
 
