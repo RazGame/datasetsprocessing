@@ -226,11 +226,14 @@ def load_spie(dataset_path, image_size, debug):
 
     for i, row in spie_annotation.iterrows():
         patient_name = row['Scan Number']
+
+        if debug:
+            print 'Loading ', patient_name
+
         ann_instance_number = row['Nodule Center Image']
 
-        coords = [x.strip() for x in row['Nodule Center x,y Position*'].split(',')]
-        ann_x = int(coords[0])
-        ann_y = int(coords[1])
+        ann_x = int(row['Nodule Center x,y Position*'])
+        ann_y = int(row['Nodule Center x,y Position*'])
 
         conclusion = row['Final Diagnosis']
         if conclusion == 'Benign nodule':

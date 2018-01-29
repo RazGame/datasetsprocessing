@@ -5,6 +5,7 @@ import pickle
 import gzip
 import os
 import medpy.io as medpy
+from skimage import io
 from lxml import etree
 import scipy.misc
 import warnings
@@ -85,16 +86,16 @@ def restore_features(file_path):
 
 
 def save_as_dataset(features, path):
-    #os.makedirs(path)
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     nodules_node = etree.Element('nodules')
 
     for i, feature in enumerate(features):
-        file_path = os.path.join(path, str(i) + '.png')
+        file_path = os.path.join(path, str(i) + '.tif')
         nodule = feature.nodule
-        print(nodule.pixels.dtype)
 
-        scipy.misc.toimage(nodule.pixels, high=255, cmin=0.0, cmax=3000.0).save(file_path)
+        io.imsave(file_path, nodule.pixels)
 
         nodule_node = etree.SubElement(nodules_node, 'nodule')
         etree.SubElement(nodule_node, 'Id').text = str(nodule.source_id)
