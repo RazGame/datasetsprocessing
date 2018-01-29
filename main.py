@@ -109,22 +109,24 @@ def run_svm(features_train, features_test):
 
 
 def main():
-    lidc_nodules = load_dataset('lidc-data', 'LIDC', use_dump=True)
-    # nsclc_nodules = load_dataset('nsclc-data', 'NSCLC', use_dump=True)
-    spie_nodules = load_dataset('spie-data', 'SPIE', use_dump=True)
+    lidc_nodules = load_dataset('E:/Datasets/LIDC', 'LIDC', use_dump=True)
+    #nsclc_nodules = load_dataset('nsclc-data', 'NSCLC', use_dump=True)
+    spie_nodules = load_dataset('E:/Datasets/SPIE', 'SPIE', use_dump=True)
 
 
 
-    lidc_features = get_features(lidc_nodules, use_dump=True, dump_name='lidc')[:300]
+    lidc_features = get_features(lidc_nodules, use_dump=True, dump_name='lidc')[:4500]
     # nsclc_features = get_features(nsclc_nodules, use_dump=True, dump_name='nsclc')
     spie_features = get_features(spie_nodules, use_dump=True, dump_name='spie')
 
-    lidc_features = shuffle(lidc_features[:1200], random_state=1)
+    #lidc_features = shuffle(lidc_features[:1200], random_state=1)
+    lidc_features = shuffle(lidc_features, random_state=1)[:500]
 
     part_size = len(lidc_features) // 2
 
     f_train = lidc_features[:part_size]
     f_test = lidc_features[part_size:]
+    #f_test = spie_features
     f_extra = spie_features
 
     fpo, tpo, ao = run_svm(f_train, f_test)
@@ -144,10 +146,11 @@ def main():
     bad_inds = []
 
     for i, imp in enumerate(impacts):
-        if imp > 0.1:
+        if imp > 0.08:
             bad_inds.append(i)
 
     print bad_inds
+    print len(bad_inds)
 
     f_filtered = np.delete(f_extra, bad_inds)
 
@@ -159,6 +162,7 @@ def main():
     plot_roc_curves(vals)
 
     f_result = np.append(f_train_and_filtered, f_test)
+
 
     feature_extractor.save_as_dataset(f_result, 'test')
 

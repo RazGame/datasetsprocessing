@@ -232,11 +232,11 @@ def load_spie(dataset_path, image_size, debug):
 
         ann_instance_number = row['Nodule Center Image']
 
-        ann_x = int(row['Nodule Center x,y Position*'])
-        ann_y = int(row['Nodule Center x,y Position*'])
+        ann_x = int(row['Nodule Center x Position*'])
+        ann_y = int(row['Nodule Center y Position*'])
 
         conclusion = row['Final Diagnosis']
-        if conclusion == 'Benign nodule':
+        if conclusion == 'Benign nodule' or conclusion == 'Suspicious malignant nodule':
             ann_conclusion = False
         else:
             ann_conclusion = True

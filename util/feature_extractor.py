@@ -93,9 +93,11 @@ def save_as_dataset(features, path):
 
     for i, feature in enumerate(features):
         file_path = os.path.join(path, str(i) + '.tif')
+        file_pathp = os.path.join(path, str(i) + '.png')
         nodule = feature.nodule
 
         io.imsave(file_path, nodule.pixels)
+        scipy.misc.toimage(nodule.pixels, high=255, cmin=0.0, cmax=3000.0).save(file_pathp)
 
         nodule_node = etree.SubElement(nodules_node, 'nodule')
         etree.SubElement(nodule_node, 'Id').text = str(nodule.source_id)
