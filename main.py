@@ -118,7 +118,7 @@ def main():
 
     lidc_features = get_features(lidc_nodules, use_dump=True, dump_name='lidc')
     nsclc_features = get_features(nsclc_nodules, use_dump=True, dump_name='nsclc')
-    spie_nodules = spie_nodules(nsclc_nodules, use_dump=True, dump_name='spie')
+    spie_nodules = get_features(spie_nodules, use_dump=True, dump_name='spie')
 
     feature_extractor.save_as_dataset(lidc_features, 'test')
 
