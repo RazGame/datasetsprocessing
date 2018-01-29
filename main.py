@@ -111,9 +111,14 @@ def run_svm(features_train, features_test):
 def main():
     lidc_nodules = load_dataset('lidc-data', 'LIDC', use_dump=True)
     nsclc_nodules = load_dataset('nsclc-data', 'NSCLC', use_dump=True)
+    spie_nodules = load_dataset('spie-data', 'SPIE', use_dump=True)
 
-    lidc_features = get_features(lidc_nodules[:300], use_dump=True, dump_name='lidc')
+    for nod in spie_nodules:
+        show_nodule(nod)
+
+    lidc_features = get_features(lidc_nodules, use_dump=True, dump_name='lidc')
     nsclc_features = get_features(nsclc_nodules, use_dump=True, dump_name='nsclc')
+    spie_nodules = spie_nodules(nsclc_nodules, use_dump=True, dump_name='spie')
 
     feature_extractor.save_as_dataset(lidc_features, 'test')
 

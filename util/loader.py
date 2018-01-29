@@ -31,7 +31,7 @@ class Nodule:
         self.conclusion = False
 
 
-def load_nodules(dataset_path, dataset_type, image_size=16, debug=False):
+def load_nodules(dataset_path, dataset_type, image_size=32, debug=False):
     """ Load dataset (which has type DATASET_TYPE) from DATASET_PATH recursively.
 
      DATASET_PATH - path to dataset.
@@ -48,6 +48,8 @@ def load_nodules(dataset_path, dataset_type, image_size=16, debug=False):
         return load_lidc(full_path, image_size, debug)
     elif dataset_type == 'NSCLC':
         return load_nsclc(full_path, image_size, debug)
+    elif dataset_type == 'SPIE':
+        return load_spie(full_path, image_size, debug)
     else:
         raise Exception('Dataset_type is wrong')
 
@@ -75,6 +77,7 @@ class DicomImage:
         self.id = ""
         self.fullpath = ""
         self.slice_location = Decimal(0)
+        self.instance_number = Decimal(0)
         self.pixels = np.array([])
 
 
@@ -87,6 +90,8 @@ def load_dicom_image(path):
     image.id = header.data_element("SOPInstanceUID").value
     image.fullpath = path
     image.slice_location = Decimal(header.get("SliceLocation", 0))
+    image.instance_number = Decimal(header.get("InstanceNumber", 0))
+
 
     return image
 
@@ -164,7 +169,7 @@ def load_lidc(dataset_path, image_size, debug):
 
 def load_nsclc(dataset_path, image_size, debug):
     img_paths = get_all_files(dataset_path, '.dcm')
-    ann_path = get_all_files(dataset_path, '.xlsx')
+    ann_paths = get_all_files(dataset_path, '.xlsx')
 
     lids_images = []
 
@@ -211,38 +216,52 @@ def load_nsclc(dataset_path, image_size, debug):
 
 
 def load_spie(dataset_path, image_size, debug):
-    img_paths = get_all_files(dataset_path, '.dcm')
-    ann_path = get_all_files(dataset_path, '.xlsx')
+    ann_path = os.path.join(dataset_path, 'spie_annotation.xlsx')
 
     f = open(ann_path, "rb")
     spie_annotation = pd.read_excel(f)
-
     f.close()
-
-    lids_images = []
-
-    for path in img_paths:
-        lids_images.append(load_dicom_image(path))
 
     nodules = []
 
-    for row in spie_annotation.iterrows():
+    for i, row in spie_annotation.iterrows():
+        patient_name = row['Scan Number']
+        ann_instance_number = row['Nodule Center Image']
+
+        coords = [x.strip() for x in row['Nodule Center x,y Position*'].split(',')]
+        ann_x = int(coords[0])
+        ann_y = int(coords[1])
+
+        conclusion = row['Final Diagnosis']
+        if conclusion == 'Benign nodule':
+            ann_conclusion = False
+        else:
+            ann_conclusion = True
+
+        subdir = os.path.join(dataset_path, patient_name)
+
+        img_paths = get_all_files(subdir, '.dcm')
+
+        spie_images = []
+
+        for path in img_paths:
+            spie_images.append(load_dicom_image(path))
+
+        img = None
+        for i in spie_images:
+            if ann_instance_number == i.instance_number:
+                img = i
+
         nodule = Nodule()
 
         nodule.size = image_size
-        # nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
-        nodule.source_id = row['Nodule Center Image'] # SLICE LOCATION?
-        # nodule.source_slice = img.slice_location
-
-        coords = [x.strip() for x in row['Nodule Center x,y Position*'].split(',')]
-        nodule.source_x = coords[0]
-        nodule.source_y = coords[1]
-        # nodule.source_path = img.fullpath
-        conclusion = row['Final Diagnosis']
-        if conclusion == 'Benign nodule':
-            nodule.conclusion = True
-        else:
-            nodule.conclusion = False
+        nodule.pixels = crop_image(img.pixels, ann_x, ann_y, nodule.size)
+        nodule.source_id = img.id
+        nodule.source_path = img.fullpath
+        nodule.source_slice = ann_instance_number
+        nodule.source_x = ann_x
+        nodule.source_y = ann_y
+        nodule.conclusion = ann_conclusion
 
         nodules.append(nodule)
 
@@ -270,7 +289,6 @@ def restore_nodules(file_path):
 def load_lidc_conclusions(path):
     f = open(path, "rb")
     df = pd.read_excel(f)
-
     f.close()
 
     patient_ids = np.array(df['TCIA Patient ID'], dtype=str)
