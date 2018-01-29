@@ -3,23 +3,19 @@ import numpy as np
 from sklearn.metrics.cluster import entropy
 import pickle
 import gzip
+import os
+import medpy.io as medpy
+from lxml import etree
+import scipy.misc
 import warnings
 
 
 class Features:
-    def __init__(self, source_id):
-        self.source_id = source_id
+    def __init__(self, nodule):
         self.max_coord = 0
         self.conclusion = False
         self.features = dict()
-
-    def __str__(self):
-        string = 'Features for ' + self.source_id
-
-        for key, value in self.features.iteritems():
-            string += '\n  ' + key + ' = ' + str(value)
-
-        return string
+        self.nodule = nodule
 
 
 def get_features(nodules):
@@ -28,7 +24,7 @@ def get_features(nodules):
     i = 0
 
     for nodule in nodules:
-        nodule_feature = Features(nodule.source_id)
+        nodule_feature = Features(nodule)
 
         nodule_feature.max_coord = np.max(nodule.pixels)
         nodule_feature.conclusion = nodule.conclusion
@@ -86,3 +82,29 @@ def restore_features(file_path):
     f.close()
 
     return features
+
+
+def save_as_dataset(features, path):
+    #os.makedirs(path)
+
+    nodules_node = etree.Element('nodules')
+
+    for i, feature in enumerate(features):
+        file_path = os.path.join(path, str(i) + '.png')
+        nodule = feature.nodule
+        print(nodule.pixels.dtype)
+
+        scipy.misc.toimage(nodule.pixels, high=255, cmin=0.0, cmax=3000.0).save(file_path)
+
+        nodule_node = etree.SubElement(nodules_node, 'nodule')
+        etree.SubElement(nodule_node, 'Id').text = str(nodule.source_id)
+        etree.SubElement(nodule_node, 'SourcePath').text = str(nodule.source_path)
+        etree.SubElement(nodule_node, 'SourceX').text = str(nodule.source_x)
+        etree.SubElement(nodule_node, 'SourceY').text = str(nodule.source_y)
+        etree.SubElement(nodule_node, 'Conclusion').text = str(nodule.conclusion)
+        etree.SubElement(nodule_node, 'ImageName').text = file_path
+        etree.SubElement(nodule_node, 'ImageSize').text = str(nodule.size)
+
+    annotation_file = open(os.path.join(path, 'annotation.xml'), 'w')
+    annotation_file.write(etree.tostring(nodules_node, pretty_print=True))
+    annotation_file.close()
